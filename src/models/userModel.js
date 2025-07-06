@@ -1,84 +1,33 @@
-
-import {PrismaClient} from '@prisma/client'
-import {z} from 'zod'
-import bcrypt from 'bcrypt';
-
+import { PrismaClient } from '@prisma/client';
+import { z } from 'zod';
 
 const prisma = new PrismaClient();
 
-
 const userSchema = z.object({
-    name: z.string({
-        invalid_type_error: "O nome deve ser uma string.",
-        required_error: "O nome é obrigatório."
-    })
-    .min(3, { message: "O nome deve ter no mínimo 3 caracteres." })
-    .max(255, { message: "O nome deve ter no máximo 255 caracteres." }),
-
-    email: z.string({
-        invalid_type_error: "O email deve ser uma string.",
-        required_error: "O email é obrigatório."
-    })
-    .email({ message: "Email inválido." }),
-
-
-
-    password: z.string({
-        invalid_type_error: "A senha deve ser uma string.",
-        required_error: "A senha é obrigatória."
-    })
-    .min(8, { message: "A senha deve ter no mínimo 8 caracteres." })
-    .max(255, { message: "A senha deve ter no máximo 255 caracteres." }),
-
-
+  nome: z.string().min(1, "Nome é obrigatório"),
+  email: z.string().email("Email inválido"),
+  senha: z.string().min(6, "Senha deve ter ao menos 6 caracteres"),
 });
 
+export const validateUser = (data, partial = false) =>
+  partial ? userSchema.partial().safeParse(data) : userSchema.safeParse(data);
 
-export const userValidator = (user, partial = null) => {
-    if(partial){
-        return userSchema.partial(partial).safeParse(user)
-    }
-    return userSchema.safeParse(user)
+export async function createUser(data) {
+  return await prisma.usuario.create({ data });
 }
 
-
-
-export async function create(user) {
-  // Gera o hash da senha (10 rounds de sal)
-  const hashedPassword = await bcrypt.hash(user.password, 10);
-
-  // Cria o usuário no banco, substituindo password pelo hash
-  const result = await prisma.user.create({
-    data: {
-      ...user,
-      password: hashedPassword,
-    }
-  });
-
-  return result;
+export async function getUserById(id) {
+  return await prisma.usuario.findUnique({ where: { id } });
 }
 
-
-export async function remove(id){
-    const result = await prisma.user.delete({
-        where: {
-            id
-        }
-    })
-    return result
+export async function getUsers() {
+  return await prisma.usuario.findMany();
 }
 
-export async function getList(){
-    const result = await prisma.user.findMany()
-    return result
+export async function updateUser(id, data) {
+  return await prisma.usuario.update({ where: { id }, data });
 }
 
-export async function update(id, user){
-    const result = await prisma.user.update({
-        where: {
-            id
-        },
-        data: user
-    })
-    return result
+export async function deleteUser(id) {
+  return await prisma.usuario.delete({ where: { id } });
 }

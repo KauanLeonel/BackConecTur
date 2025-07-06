@@ -9,23 +9,198 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  name     String
-  email    String  @unique
-  password String
-  tasks    Task[]  @relation("UserTasks")
+model Usuario {
+  id            Int             @id @default(autoincrement())
+  nome          String
+  email         String          @unique
+  senha         String
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+
+  empresa        Empresa?
+  cidadao        Cidadao?
+  administrador  Administrador?
 }
 
-model Task {
-  id          String  @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String
-  complet     Boolean
-  userId      String  @db.ObjectId
-  user        User    @relation(fields: [userId], references: [id], name: "UserTasks", onDelete: Cascade)
+model Empresa {
+  usuarioId Int     @id
+  cnpj      String  @unique
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  eventosCadastrados EventoEmpresa[]
+}
+
+model Cidadao {
+  usuarioId             Int     @id
+  usuario               Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  preferencias          PreferenciasNotificacao?
+  configuracoes         ConfiguracoesGerais?
+  conquistas            Conquista?
+  notificacoes          Notificacao[]
+  favoritos             Favorito[]
+  historicos            Historico[]
+  eventos               EventoCidadao[]
+}
+
+model Administrador {
+  usuarioId Int     @id
+  prontuario String @unique
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  eventosAdministrados EventoAdministrador[]
+}
+
+model Evento {
+  id          Int          @id @default(autoincrement())
+  nome        String
+  descricao   String?
+  data_hora   DateTime
+  categoria   String?
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+
+  localizacao Localizacao?
+  favoritos   Favorito[]
+  historicos  Historico[]
+  cidadaos    EventoCidadao[]
+  empresas    EventoEmpresa[]
+  administradores EventoAdministrador[]
+}
+
+model Localizacao {
+  id        Int     @id @default(autoincrement())
+  latitude  Float
+  longitude Float
+  endereco  String
+  eventoId  Int     @unique
+  evento    Evento  @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+}
+
+model PreferenciasNotificacao {
+  id                Int      @id @default(autoincrement())
+  cidadaoId         Int      @unique
+  notificacao_push  Boolean  @default(true)
+  notificacao_email Boolean  @default(true)
+  frequencia        String?
+  cidadao           Cidadao  @relation(fields: [cidadaoId], references: [usuarioId], onDelete: Cascade)
+}
+
+model ConfiguracoesGerais {
+  id            Int     @id @default(autoincrement())
+  cidadaoId     Int     @unique
+  tema          String  @default("claro")
+  idioma        String  @default("pt-BR")
+  receber_email Boolean @default(true)
+  cidadao       Cidadao @relation(fields: [cidadaoId], references: [usuarioId], onDelete: Cascade)
+}
+
+model Notificacao {
+  id            Int      @id @default(autoincrement())
+  mensagem      String
+  data_hora_envio DateTime @default(now())
+  cidadaoId     Int
+  cidadao       Cidadao  @relation(fields: [cidadaoId], references: [usuarioId], onDelete: Cascade)
+}
+
+model Conquista {
+  id         Int      @id @default(autoincrement())
+  cidadaoId  Int      @unique
+  moedas     Int      @default(0)
+  nivel      Int      @default(1)
+  progresso  Float    @default(0)
+  cidadao    Cidadao  @relation(fields: [cidadaoId], references: [usuarioId], onDelete: Cascade)
+  missoes    Missao[]
+}
+
+model Missao {
+  id            Int        @id @default(autoincrement())
+  descricao     String
+  premio        String?
+  concluido     Boolean    @default(false)
+  conquistasId  Int
+  conquista     Conquista  @relation(fields: [conquistasId], references: [id], onDelete: Cascade)
+}
+
+model Loja {
+  id        Int      @id @default(autoincrement())
+  nome      String   @unique @default("Loja Principal")
+  sorteios  Sorteio[]
+  cupons    Cupom[]
+}
+
+model Sorteio {
+  id          Int     @id @default(autoincrement())
+  nome        String
+  descricao   String?
+  data_sorteio DateTime
+  lojaId      Int
+  loja        Loja    @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+}
+
+model Cupom {
+  id           Int     @id @default(autoincrement())
+  descricao    String
+  data_validade DateTime
+  lojaId       Int
+  loja         Loja    @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+}
+
+model Favorito {
+  id         Int     @id @default(autoincrement())
+  cidadaoId  Int
+  eventoId   Int
+  dataFavoritado DateTime @default(now())
+
+  cidadao    Cidadao @relation(fields: [cidadaoId], references: [usuarioId], onDelete: Cascade)
+  evento     Evento  @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+
+  @@unique([cidadaoId, eventoId])
+}
+
+model Historico {
+  id         Int     @id @default(autoincrement())
+  cidadaoId  Int
+  eventoId   Int
+  dataAcesso DateTime @default(now())
+
+  cidadao    Cidadao @relation(fields: [cidadaoId], references: [usuarioId], onDelete: Cascade)
+  evento     Evento  @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+}
+
+model EventoCidadao {
+  cidadaoId Int
+  eventoId  Int
+  dataAssociacao DateTime @default(now())
+
+  cidadao   Cidadao @relation(fields: [cidadaoId], references: [usuarioId], onDelete: Cascade)
+  evento    Evento  @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+
+  @@id([cidadaoId, eventoId])
+}
+
+model EventoEmpresa {
+  empresaId Int
+  eventoId  Int
+  dataCadastro DateTime @default(now())
+
+  empresa Empresa @relation(fields: [empresaId], references: [usuarioId], onDelete: Cascade)
+  evento  Evento  @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+
+  @@id([empresaId, eventoId])
+}
+
+model EventoAdministrador {
+  administradorId Int
+  eventoId        Int
+  dataAdministracao DateTime @default(now())
+
+  administrador Administrador @relation(fields: [administradorId], references: [usuarioId], onDelete: Cascade)
+  evento        Evento        @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+
+  @@id([administradorId, eventoId])
 }
