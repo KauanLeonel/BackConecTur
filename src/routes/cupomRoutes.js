@@ -1,13 +1,25 @@
+// Exemplo em src/routes/lojaRoutes.js ou um novo arquivo de rotas
 import express from 'express';
-import * as cupomController from '../controllers/cupomController.js';
+import {
+    createCupom,
+    getAllCupons,
+    getCupomById,
+    updateCupom,
+    deleteCupom,
+    resgatarCupom // Se for usar
+} from '../controllers/cupomController.js'; // Ajuste o caminho
 
 const router = express.Router();
 
-router.get('/', cupomController.getAllCupons);
-router.get('/:id', cupomController.getCupomById);
-router.post('/', cupomController.createCupom);
-router.put('/:id', cupomController.updateCupom);
-router.patch('/:id', cupomController.partialUpdateCupom);
-router.delete('/:id', cupomController.deleteCupom);
+// Rotas de gerenciamento de Cupons (para administradores/gerenciadores de loja)
+router.post('/lojas/:lojaId/cupons', createCupom); // Cria cupom para uma loja
+router.get('/cupons', getAllCupons); // Busca todos os cupons
+router.get('/lojas/:lojaId/cupons', getAllCupons); // Busca cupons de uma loja específica
+router.get('/cupons/:id', getCupomById);
+router.put('/cupons/:id', updateCupom);
+router.delete('/cupons/:id', deleteCupom);
+
+// Rota para o cidadão resgatar um cupom (se implementado)
+router.post('/cidadaos/:cidadaoId/cupons/:cupomId/resgatar', resgatarCupom);
 
 export default router;
