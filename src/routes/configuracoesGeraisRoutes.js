@@ -1,13 +1,14 @@
+// Exemplo em src/routes/cidadaoRoutes.js ou um novo arquivo de rotas
 import express from 'express';
-import * as configuracoesGeraisController from '../controllers/configuracoesGeraisController.js';
+import {
+    getGeneralConfigsByCidadaoId,
+    updateGeneralConfigs
+} from '../controllers/configuracoesGeraisController.js'; // Ajuste o caminho
 
 const router = express.Router();
 
-router.get('/', configuracoesGeraisController.getAllConfiguracoes);
-router.get('/:id', configuracoesGeraisController.getConfiguracaoById);
-router.post('/', configuracoesGeraisController.createConfiguracao);
-router.put('/:id', configuracoesGeraisController.updateConfiguracao);
-router.patch('/:id', configuracoesGeraisController.partialUpdateConfiguracao);
-router.delete('/:id', configuracoesGeraisController.deleteConfiguracao);
+// Rotas para Configurações Gerais
+router.get('/:cidadaoId/configuracoes-gerais', getGeneralConfigsByCidadaoId);
+router.put('/:cidadaoId/configuracoes-gerais', updateGeneralConfigs); // Ou .patch
 
 export default router;

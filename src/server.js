@@ -16,7 +16,7 @@ import adminRoutes from './routes/adminRoutes.js';
 // import notificacaoRoutes from './routes/notificacaoRoutes.js';
 // import preferenciasNotificacaoRoutes from './routes/preferenciasNotificacaoRoutes.js';
 // import sorteioRoutes from './routes/sorteioRoutes.js';
-// import configuracoesGeraisRoutes from './routes/configuracoesGeraisRoutes.js';
+import configuracoesGeraisRoutes from './routes/configuracoesGeraisRoutes.js';
 import { errorHandler } from "./middleware/errorsHandle.js"
 import { logger } from "./middleware/logger.js"
 
@@ -43,7 +43,7 @@ app.use('/admin', adminRoutes);
 // app.use('/notificacao', notificacaoRoutes);
 // app.use('/preferenciasnotificacao', preferenciasNotificacaoRoutes);
 // app.use('/sorteio', sorteioRoutes);
-// app.use('/configuracoesgerais', configuracoesGeraisRoutes);
+app.use('/configuracoesgerais', configuracoesGeraisRoutes);
 // //app.use("/task", taskRoutes)
 app.use(errorHandler)
 
