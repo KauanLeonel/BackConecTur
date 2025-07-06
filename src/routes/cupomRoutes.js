@@ -1,4 +1,3 @@
-// Exemplo em src/routes/lojaRoutes.js ou um novo arquivo de rotas
 import express from 'express';
 import {
     createCupom,
