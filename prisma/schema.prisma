@@ -45,6 +45,7 @@ model Cidadao {
   favoritos             Favorito[]
   historicos            Historico[]
   eventos               EventoCidadao[]
+  cuponsResgatados      CidadaoCupomResgatado[]
 }
 
 model Administrador {
@@ -148,6 +149,7 @@ model Cupom {
   data_validade DateTime
   lojaId       Int
   loja         Loja    @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+  resgatesCidadao       CidadaoCupomResgatado[]
 }
 
 model Favorito {
@@ -203,4 +205,16 @@ model EventoAdministrador {
   evento        Evento        @relation(fields: [eventoId], references: [id], onDelete: Cascade)
 
   @@id([administradorId, eventoId])
+}
+
+model CidadaoCupomResgatado {
+  cidadaoId    Int
+  cupomId      Int
+  dataResgate  DateTime @default(now())
+
+  cidadao       Cidadao @relation(fields: [cidadaoId], references: [usuarioId])
+  cupom         Cupom   @relation(fields: [cupomId], references: [id])
+
+  @@id([cidadaoId, cupomId]) 
+  @@map("cidadaoCupomResgatado") 
 }
